@@ -272,85 +272,242 @@ export async function GET(req: NextRequest) {
         {AccentLine}
       </div>
     ) : (
-      /* ── B1: NO PHOTO — dark with circles ── */
+      /* ── C3: NO PHOTO — editorial/magazine layout ── */
       <div
         style={{
           width: 1200,
           height: 630,
           display: 'flex',
           position: 'relative',
-          backgroundColor: '#0a0a0a',
+          backgroundColor: '#0c0c0c',
         }}
       >
-        {/* Left orange accent bar */}
+        {/* Top bar */}
         <div
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
-            width: 5,
-            height: 630,
+            right: 0,
+            height: 56,
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 32px',
+          }}
+        >
+          {/* Top-left: M square + MAIARIX AI */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                backgroundColor: '#e8600a',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+                fontWeight: 900,
+                color: 'white',
+              }}
+            >
+              M
+            </div>
+            <span
+              style={{
+                fontSize: 12,
+                color: 'rgba(255,255,255,0.45)',
+                letterSpacing: '2px',
+                fontWeight: 600,
+              }}
+            >
+              MAIARIX AI
+            </span>
+          </div>
+
+          {/* Top-right: LANDING PAGE */}
+          <span
+            style={{
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.25)',
+              letterSpacing: '3px',
+              fontWeight: 600,
+            }}
+          >
+            LANDING PAGE
+          </span>
+        </div>
+
+        {/* Business name — centered vertically around y=310 */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 240,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize:
+                displayName.length > 20 ? 56 :
+                displayName.length > 16 ? 72 : 96,
+              fontWeight: 900,
+              color: '#ffffff',
+              lineHeight: 1.0,
+              textAlign: 'center',
+            }}
+          >
+            {displayName}
+          </span>
+        </div>
+
+        {/* Left horizontal rule */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 332,
+            left: 80,
+            width: 480,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.08)',
+            display: 'flex',
+          }}
+        />
+
+        {/* Orange dot */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 324,
+            left: 592,
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
             backgroundColor: '#e8600a',
             display: 'flex',
           }}
         />
 
-        {/* Decorative circles — right side */}
+        {/* Right horizontal rule */}
         <div
           style={{
             position: 'absolute',
-            right: 160,
-            top: '50%',
-            width: 440,
-            height: 440,
-            marginTop: -220,
-            borderRadius: '50%',
-            border: '1px solid rgba(232,96,10,0.07)',
+            top: 332,
+            left: 640,
+            width: 480,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.08)',
             display: 'flex',
-            alignItems: 'center',
+          }}
+        />
+
+        {/* Sub-info centered below rules */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 358,
+            left: 0,
+            right: 0,
+            display: 'flex',
             justifyContent: 'center',
           }}
         >
+          <span
+            style={{
+              fontSize: 18,
+              color: 'rgba(255,255,255,0.4)',
+              textAlign: 'center',
+            }}
+          >
+            {[
+              city,
+              viewCount > 0 ? `${viewCount.toLocaleString('id-ID')} views` : '',
+              agentName ? `Agen: ${agentName}` : '',
+            ].filter(Boolean).join(' · ')}
+          </span>
+        </div>
+
+        {/* WA badge centered */}
+        {hasWa && (
           <div
             style={{
-              width: 310,
-              height: 310,
-              borderRadius: '50%',
-              border: '1px solid rgba(232,96,10,0.1)',
+              position: 'absolute',
+              top: 415,
+              left: 490,
+              width: 220,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: '#25D366',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <div
+            <span
               style={{
-                width: 180,
-                height: 180,
-                borderRadius: '50%',
-                backgroundColor: 'rgba(232,96,10,0.05)',
-                display: 'flex',
+                fontSize: 15,
+                fontWeight: 700,
+                color: 'white',
               }}
-            />
+            >
+              Hubungi WA
+            </span>
           </div>
-        </div>
+        )}
 
-        {/* lp.mrix.ai watermark bottom-left */}
+        {/* Bottom rule */}
         <div
           style={{
             position: 'absolute',
-            bottom: 16,
-            left: 40,
-            fontSize: 13,
-            color: 'rgba(255,255,255,0.18)',
+            top: 574,
+            left: 0,
+            right: 0,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.06)',
             display: 'flex',
           }}
+        />
+
+        {/* Bottom center text */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 592,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+          }}
         >
-          lp.mrix.ai
+          <span
+            style={{
+              fontSize: 12,
+              color: 'rgba(255,255,255,0.18)',
+            }}
+          >
+            lp.mrix.ai · Properti Terbaik di Indonesia
+          </span>
         </div>
 
-        {LogoBrand}
-        {BottomStrip}
-        {AccentLine}
+        {/* Orange accent line — bottom 3px */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            backgroundColor: '#e8600a',
+            display: 'flex',
+          }}
+        />
       </div>
     ),
     {
