@@ -317,20 +317,39 @@ export async function GET(req: NextRequest) {
               }}
             />
 
-            {/* Large faint house icon — center */}
+            {/* Large faint house shape — center */}
             <div
               style={{
                 position: 'absolute',
-                top: 100,
+                top: 80,
                 left: 0,
                 right: 0,
                 display: 'flex',
                 justifyContent: 'center',
-                fontSize: 220,
-                opacity: 0.05,
+                alignItems: 'center',
               }}
             >
-              🏠
+              <div
+                style={{
+                  width: 200,
+                  height: 200,
+                  backgroundColor: 'rgba(232,96,10,0.04)',
+                  borderRadius: 24,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <div
+                  style={{
+                    width: 120,
+                    height: 100,
+                    backgroundColor: 'rgba(232,96,10,0.06)',
+                    borderRadius: 12,
+                    display: 'flex',
+                  }}
+                />
+              </div>
             </div>
 
             {/* Top: Maiarix brand */}
