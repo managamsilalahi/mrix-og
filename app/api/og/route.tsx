@@ -307,16 +307,6 @@ export async function GET(req: NextRequest) {
               }}
             />
 
-            {/* Subtle background tint */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(232,96,10,0.03)',
-                display: 'flex',
-              }}
-            />
-
             {/* Large faint house shape — center */}
             <div
               style={{
