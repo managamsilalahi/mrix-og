@@ -34,16 +34,14 @@ export async function GET(req: NextRequest) {
       const project = projects?.[0];
 
       if (project) {
-        // Business name priority: business_name → property_name → name
         const rawName =
           project.business_name ||
           project.property_name ||
           project.name ||
           'Properti Terbaik di Indonesia';
 
-        // Truncate at 22 chars for display
-        displayName = rawName.length > 22
-          ? rawName.slice(0, 20) + '…'
+        displayName = rawName.length > 20
+          ? rawName.slice(0, 18) + '…'
           : rawName;
 
         city = project.city || '';
@@ -51,7 +49,6 @@ export async function GET(req: NextRequest) {
         hasWa = !!project.whatsapp_number;
         heroImageUrl = project.hero_image_url || null;
 
-        // Sub-text: city + views
         if (city && viewCount > 0) {
           subText = `${city} · ${viewCount.toLocaleString('id-ID')} views`;
         } else if (city) {
@@ -74,149 +71,12 @@ export async function GET(req: NextRequest) {
     } catch {}
   }
 
-  // Logo element — "M" orange square
-  const LogoBrand = (
-    <div
-      style={{
-        position: 'absolute',
-        top: 28,
-        left: 32,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-      }}
-    >
-      <div
-        style={{
-          width: 28,
-          height: 28,
-          borderRadius: 6,
-          backgroundColor: '#e8600a',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 14,
-          fontWeight: 900,
-          color: 'white',
-        }}
-      >
-        M
-      </div>
-      <span
-        style={{
-          fontSize: 12,
-          color: 'rgba(255,255,255,0.55)',
-          letterSpacing: '1.5px',
-        }}
-      >
-        Landing Page by Maiarix AI
-      </span>
-    </div>
-  );
-
-  // Bottom strip — shared between A1 and B1
-  const BottomStrip = (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: '0 40px 36px 40px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0,
-      }}
-    >
-      {/* Business name */}
-      <div
-        style={{
-          fontSize: displayName.length > 16 ? 62 : 76,
-          fontWeight: 900,
-          color: '#ffffff',
-          lineHeight: 1.05,
-          marginBottom: 10,
-        }}
-      >
-        {displayName}
-      </div>
-
-      {/* City · views row + WA badge */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: '100%',
-          marginBottom: agentName ? 6 : 0,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 20,
-            color: 'rgba(255,255,255,0.65)',
-          }}
-        >
-          {subText}
-        </span>
-
-        {hasWa && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              backgroundColor: '#25D366',
-              borderRadius: 24,
-              padding: '10px 22px',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 15,
-                fontWeight: 700,
-                color: 'white',
-              }}
-            >
-              Hubungi WA
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Agent name */}
-      {agentName && (
-        <span
-          style={{
-            fontSize: 15,
-            color: 'rgba(255,255,255,0.38)',
-          }}
-        >
-          Agen: {agentName}
-        </span>
-      )}
-    </div>
-  );
-
-  // Orange bottom accent line
-  const AccentLine = (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 4,
-        backgroundColor: '#e8600a',
-        display: 'flex',
-      }}
-    />
-  );
-
+  const nameFontSize = displayName.length > 16 ? 62 : displayName.length > 12 ? 72 : 82;
   const hasPhoto = !!heroImageUrl;
 
   const response = new ImageResponse(
     hasPhoto ? (
-      /* ── A1: PHOTO HERO ── */
+      /* ── D1: PHOTO HERO — CLEAN BOTTOM STRIP ── */
       <div
         style={{
           width: 1200,
@@ -226,7 +86,7 @@ export async function GET(req: NextRequest) {
           backgroundColor: '#0f0f0f',
         }}
       >
-        {/* Full bleed hero photo */}
+        {/* Full bleed hero image */}
         <img
           src={heroImageUrl!}
           style={{
@@ -246,9 +106,8 @@ export async function GET(req: NextRequest) {
             top: 0,
             left: 0,
             right: 0,
-            height: 120,
-            background:
-              'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent)',
+            height: 140,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.55), transparent)',
             display: 'flex',
           }}
         />
@@ -260,19 +119,159 @@ export async function GET(req: NextRequest) {
             bottom: 0,
             left: 0,
             right: 0,
-            height: 340,
+            height: 260,
             background:
-              'linear-gradient(to top, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.75) 45%, transparent 100%)',
+              'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 50%, transparent 100%)',
             display: 'flex',
           }}
         />
 
-        {LogoBrand}
-        {BottomStrip}
-        {AccentLine}
+        {/* Logo block */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 28,
+            left: 36,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 6,
+              backgroundColor: '#e8600a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 13,
+              fontWeight: 900,
+              color: 'white',
+            }}
+          >
+            M
+          </div>
+          <span
+            style={{
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.5)',
+              letterSpacing: '1px',
+            }}
+          >
+            MAIARIX AI
+          </span>
+        </div>
+
+        {/* Bottom content strip */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '0 40px 32px 40px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Business name */}
+          <span
+            style={{
+              fontSize: nameFontSize,
+              fontWeight: 900,
+              color: '#ffffff',
+              lineHeight: 1.05,
+              marginBottom: 8,
+            }}
+          >
+            {displayName}
+          </span>
+
+          {/* Info + WA row */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              marginBottom: agentName ? 6 : 0,
+            }}
+          >
+            {/* Left: city · views */}
+            <div
+              style={{
+                display: 'flex',
+                flex: 1,
+                flexDirection: 'row',
+                gap: 8,
+                alignItems: 'center',
+              }}
+            >
+              {city && (
+                <span style={{ fontSize: 19, color: 'rgba(255,255,255,0.65)' }}>
+                  {city}
+                </span>
+              )}
+              {city && viewCount > 0 && (
+                <div
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                  }}
+                />
+              )}
+              {viewCount > 0 && (
+                <span style={{ fontSize: 19, color: 'rgba(255,255,255,0.65)' }}>
+                  {viewCount.toLocaleString('id-ID')} views
+                </span>
+              )}
+            </div>
+
+            {/* Right: WA badge */}
+            {hasWa && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: '#25D366',
+                  borderRadius: 22,
+                  padding: '10px 22px',
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>
+                  Hubungi WA
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Agent name */}
+          {agentName && (
+            <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.38)' }}>
+              Agen: {agentName}
+            </span>
+          )}
+        </div>
+
+        {/* Orange accent line */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            backgroundColor: '#e8600a',
+            display: 'flex',
+          }}
+        />
       </div>
     ) : (
-      /* ── C3: NO PHOTO — editorial/magazine layout ── */
+      /* ── C3: NO PHOTO — EDITORIAL/MAGAZINE ── */
       <div
         style={{
           width: 1200,
@@ -282,7 +281,7 @@ export async function GET(req: NextRequest) {
           backgroundColor: '#0c0c0c',
         }}
       >
-        {/* Top bar */}
+        {/* Top header bar */}
         <div
           style={{
             position: 'absolute',
@@ -293,210 +292,176 @@ export async function GET(req: NextRequest) {
             backgroundColor: 'rgba(255,255,255,0.03)',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
             display: 'flex',
+          }}
+        />
+
+        {/* Logo block — centered within 56px bar: (56-26)/2 = 15 */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 15,
+            left: 36,
+            display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 32px',
+            gap: 10,
           }}
         >
-          {/* Top-left: M square + MAIARIX AI */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                backgroundColor: '#e8600a',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-                fontWeight: 900,
-                color: 'white',
-              }}
-            >
-              M
-            </div>
-            <span
-              style={{
-                fontSize: 12,
-                color: 'rgba(255,255,255,0.45)',
-                letterSpacing: '2px',
-                fontWeight: 600,
-              }}
-            >
-              MAIARIX AI
-            </span>
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 6,
+              backgroundColor: '#e8600a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 13,
+              fontWeight: 900,
+              color: 'white',
+            }}
+          >
+            M
           </div>
-
-          {/* Top-right: LANDING PAGE */}
           <span
             style={{
               fontSize: 11,
-              color: 'rgba(255,255,255,0.25)',
-              letterSpacing: '3px',
-              fontWeight: 600,
+              color: 'rgba(255,255,255,0.5)',
+              letterSpacing: '1px',
+            }}
+          >
+            MAIARIX AI
+          </span>
+        </div>
+
+        {/* LANDING PAGE label */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 20,
+            right: 40,
+            display: 'flex',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.2)',
+              letterSpacing: '1px',
             }}
           >
             LANDING PAGE
           </span>
         </div>
 
-        {/* Business name — centered vertically around y=310 */}
+        {/* Center content — inset flex column */}
         <div
           style={{
             position: 'absolute',
-            top: 240,
+            top: 0,
             left: 0,
             right: 0,
+            bottom: 0,
             display: 'flex',
-            justifyContent: 'center',
+            flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
+          {/* Business name */}
           <span
             style={{
-              fontSize:
-                displayName.length > 20 ? 56 :
-                displayName.length > 16 ? 72 : 96,
+              fontSize: nameFontSize,
               fontWeight: 900,
               color: '#ffffff',
-              lineHeight: 1.0,
-              textAlign: 'center',
+              marginBottom: 20,
             }}
           >
             {displayName}
           </span>
-        </div>
 
-        {/* Left horizontal rule */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 332,
-            left: 80,
-            width: 480,
-            height: 1,
-            backgroundColor: 'rgba(255,255,255,0.08)',
-            display: 'flex',
-          }}
-        />
+          {/* Horizontal rules + orange dot */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              width: '100%',
+              paddingLeft: 80,
+              paddingRight: 80,
+              alignItems: 'center',
+              marginBottom: 20,
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+              }}
+            />
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: '#e8600a',
+                margin: '0 16px',
+              }}
+            />
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+              }}
+            />
+          </div>
 
-        {/* Orange dot */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 324,
-            left: 592,
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            backgroundColor: '#e8600a',
-            display: 'flex',
-          }}
-        />
-
-        {/* Right horizontal rule */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 332,
-            left: 640,
-            width: 480,
-            height: 1,
-            backgroundColor: 'rgba(255,255,255,0.08)',
-            display: 'flex',
-          }}
-        />
-
-        {/* Sub-info centered below rules */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 358,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            justifyContent: 'center',
-          }}
-        >
+          {/* Sub info */}
           <span
             style={{
               fontSize: 18,
               color: 'rgba(255,255,255,0.4)',
-              textAlign: 'center',
+              marginBottom: 20,
             }}
           >
-            {[
-              city,
-              viewCount > 0 ? `${viewCount.toLocaleString('id-ID')} views` : '',
-              agentName ? `Agen: ${agentName}` : '',
-            ].filter(Boolean).join(' · ')}
+            {subText}{agentName ? ` · Agen: ${agentName}` : ''}
           </span>
-        </div>
 
-        {/* WA badge centered */}
-        {hasWa && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 415,
-              left: 490,
-              width: 220,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: '#25D366',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <span
+          {/* WA badge */}
+          {hasWa && (
+            <div
               style={{
-                fontSize: 15,
-                fontWeight: 700,
-                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: '#25D366',
+                borderRadius: 24,
+                padding: '10px 28px',
               }}
             >
-              Hubungi WA
-            </span>
-          </div>
-        )}
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>
+                Hubungi WA
+              </span>
+            </div>
+          )}
+        </div>
 
-        {/* Bottom rule */}
+        {/* Bottom watermark */}
         <div
           style={{
             position: 'absolute',
-            top: 574,
-            left: 0,
-            right: 0,
-            height: 1,
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            display: 'flex',
-          }}
-        />
-
-        {/* Bottom center text */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 592,
+            bottom: 20,
             left: 0,
             right: 0,
             display: 'flex',
             justifyContent: 'center',
           }}
         >
-          <span
-            style={{
-              fontSize: 12,
-              color: 'rgba(255,255,255,0.18)',
-            }}
-          >
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.18)' }}>
             lp.mrix.ai · Properti Terbaik di Indonesia
           </span>
         </div>
 
-        {/* Orange accent line — bottom 3px */}
+        {/* Orange accent line */}
         <div
           style={{
             position: 'absolute',
@@ -515,6 +480,7 @@ export async function GET(req: NextRequest) {
       height: 630,
     }
   );
+
   response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
   return response;
 }
