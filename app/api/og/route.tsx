@@ -335,25 +335,6 @@ export async function GET(req: NextRequest) {
           </span>
         </div>
 
-        {/* LANDING PAGE label */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 20,
-            right: 40,
-            display: 'flex',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 11,
-              color: 'rgba(255,255,255,0.2)',
-              letterSpacing: '1px',
-            }}
-          >
-            LANDING PAGE
-          </span>
-        </div>
 
         {/* Center content — inset flex column */}
         <div
@@ -459,7 +440,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.18)' }}>
-            lp.mrix.ai · Properti Terbaik di Indonesia
+            Properti Terbaik · Agen Profesional · Langsung WA
           </span>
         </div>
 
