@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
 
   const hasPhoto = !!heroImageUrl;
 
-  return new ImageResponse(
+  const response = new ImageResponse(
     hasPhoto
       ? /* WITH PHOTO — full bleed + gradient overlay */
         (
@@ -515,4 +515,6 @@ export async function GET(req: NextRequest) {
       height: 630,
     }
   );
+  response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+  return response;
 }
