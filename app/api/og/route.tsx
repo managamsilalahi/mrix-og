@@ -155,12 +155,13 @@ export async function GET(req: NextRequest) {
           </div>
           <span
             style={{
-              fontSize: 11,
+              fontSize: 10,
               color: 'rgba(255,255,255,0.5)',
               letterSpacing: '1px',
+              whiteSpace: 'nowrap',
             }}
           >
-            MAIARIX AI
+            Landing Page by Maiarix AI
           </span>
         </div>
 
@@ -324,12 +325,13 @@ export async function GET(req: NextRequest) {
           </div>
           <span
             style={{
-              fontSize: 11,
+              fontSize: 10,
               color: 'rgba(255,255,255,0.5)',
               letterSpacing: '1px',
+              whiteSpace: 'nowrap',
             }}
           >
-            MAIARIX AI
+            Landing Page by Maiarix AI
           </span>
         </div>
 
