@@ -1,247 +1,518 @@
-import { ImageResponse } from 'next/og'
+import { ImageResponse } from 'next/og';
+import { NextRequest } from 'next/server';
 
-export const runtime = 'edge'
+export const runtime = 'edge';
 
-const THEMES: Record<string, { bg: string; surface: string; text: string; sub: string; accent: string }> = {
-  dawn:   { bg: '#f8f9fa', surface: '#eef1f5', text: '#1a3a5c', sub: '#5a7a9c', accent: '#e8600a' },
-  noir:   { bg: '#080808', surface: '#141414', text: '#ffffff', sub: '#aaaaaa', accent: '#c9a84c' },
-  ember:  { bg: '#1c0f07', surface: '#2a1a0e', text: '#ffffff', sub: '#c49a7a', accent: '#e8622a' },
-  pearl:  { bg: '#fafaf8', surface: '#f0f0ec', text: '#1a1a1a', sub: '#666660', accent: '#b8860b' },
-  onyx:   { bg: '#0a0a0a', surface: '#161616', text: '#ffffff', sub: '#999999', accent: '#c9a84c' },
-  cobalt: { bg: '#0d1b2a', surface: '#152336', text: '#ffffff', sub: '#8aaabb', accent: '#4a9eff' },
-}
+const SUPABASE_URL = process.env.SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY!;
 
-const DEFAULT_THEME = THEMES.dawn
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const slug = searchParams.get('slug') ?? '';
 
-interface Project {
-  name: string | null
-  business_name: string | null
-  logo_url: string | null
-  hero_image_url: string | null
-  style: string | null
-  user_id: string | null
-  city: string | null
-  view_count: number | null
-  whatsapp_number: string | null
-}
+  let businessName = 'Halaman Properti';
+  let city = '';
+  let viewCount = 0;
+  let agentName = '';
+  let hasWa = false;
+  let heroImageUrl: string | null = null;
 
-interface Profile {
-  full_name: string | null
-}
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const slug = searchParams.get('slug')
-
-  if (!slug) {
-    return new Response('Missing slug', { status: 400 })
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL!
-  const supabaseKey = process.env.SUPABASE_ANON_KEY!
-  const headers = {
-    apikey: supabaseKey,
-    Authorization: `Bearer ${supabaseKey}`,
-  }
-
-  let project: Project | null = null
-  let agentName: string | null = null
-
-  try {
-    const projectRes = await fetch(
-      `${supabaseUrl}/rest/v1/projects?published_slug=eq.${encodeURIComponent(slug)}&select=name,business_name,logo_url,hero_image_url,style,user_id,city,view_count,whatsapp_number&limit=1`,
-      { headers }
-    )
-    const rows: Project[] = await projectRes.json()
-    project = rows[0] ?? null
-
-    if (project?.user_id) {
-      const profileRes = await fetch(
-        `${supabaseUrl}/rest/v1/profiles?id=eq.${project.user_id}&select=full_name&limit=1`,
-        { headers }
-      )
-      const profiles: Profile[] = await profileRes.json()
-      agentName = profiles[0]?.full_name ?? null
-    }
-  } catch {
-    // render fallback branded image on fetch error
-  }
-
-  const theme = THEMES[project?.style ?? ''] ?? DEFAULT_THEME
-  const title = project?.business_name || project?.name || 'Maiarix Landing Page'
-  const city = project?.city ?? null
-  const views = project?.view_count ?? null
-  const waNumber = project?.whatsapp_number ?? null
-  const heroUrl = project?.hero_image_url ?? null
-  const logoUrl = project?.logo_url ?? null
-
-  // Probe hero image — skip if Supabase returns x-robots-tag: none (storage auth issue)
-  let heroSrc: string | null = null
-  if (heroUrl) {
+  if (slug) {
     try {
-      const probe = await fetch(heroUrl, { method: 'HEAD' })
-      if (probe.ok && probe.headers.get('x-robots-tag') !== 'none') {
-        heroSrc = heroUrl
+      const headers = {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+
+      const [projectRes, ] = await Promise.all([
+        fetch(
+          `${SUPABASE_URL}/rest/v1/projects?published_slug=eq.${encodeURIComponent(slug)}&select=business_name,city,view_count,hero_image_url,whatsapp_number,user_id&limit=1`,
+          { headers }
+        ),
+      ]);
+
+      const projects = await projectRes.json();
+      const project = projects?.[0];
+
+      if (project) {
+        businessName = project.business_name || businessName;
+        city = project.city || '';
+        viewCount = project.view_count || 0;
+        hasWa = !!project.whatsapp_number;
+        heroImageUrl = project.hero_image_url || null;
+
+        if (project.user_id) {
+          const profileRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/profiles?id=eq.${project.user_id}&select=full_name&limit=1`,
+            { headers }
+          );
+          const profiles = await profileRes.json();
+          agentName = profiles?.[0]?.full_name || '';
+        }
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
 
-  const hasHero = !!heroSrc
-  const leftWidth = hasHero ? 65 : 100
+  // Truncate business name
+  const displayName = businessName.length > 24
+    ? businessName.slice(0, 22) + '…'
+    : businessName;
+
+  const hasPhoto = !!heroImageUrl;
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: 1200,
-          height: 630,
-          display: 'flex',
-          fontFamily: 'sans-serif',
-          background: theme.bg,
-        }}
-      >
-        {/* Left panel */}
-        <div
-          style={{
-            width: `${leftWidth}%`,
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '52px 56px',
-            background: theme.bg,
-            position: 'relative',
-          }}
-        >
-          {/* Logo */}
-          {logoUrl && (
-            <img
-              src={logoUrl}
-              width={48}
-              height={48}
-              style={{ objectFit: 'contain', marginBottom: 20, borderRadius: 8 }}
-            />
-          )}
-
-          {/* Business name */}
+    hasPhoto
+      ? /* WITH PHOTO — full bleed + gradient overlay */
+        (
           <div
             style={{
-              color: theme.text,
-              fontSize: 68,
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: '-1px',
-              marginBottom: 20,
-              maxWidth: '100%',
-              wordBreak: 'break-word',
+              width: 1200,
+              height: 630,
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              backgroundColor: '#0f0f0f',
             }}
           >
-            {title}
-          </div>
+            {/* Full bleed hero image */}
+            <img
+              src={heroImageUrl!}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 1200,
+                height: 630,
+                objectFit: 'cover',
+              }}
+            />
 
-          {/* City + view count */}
-          {(city || views !== null) && (
+            {/* Top gradient — for logo readability */}
             <div
               style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 140,
+                background:
+                  'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+                display: 'flex',
+              }}
+            />
+
+            {/* Bottom gradient — for text readability */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 320,
+                background:
+                  'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+                display: 'flex',
+              }}
+            />
+
+            {/* Top left: Maiarix brand */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 28,
+                left: 32,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 16,
-                color: theme.sub,
-                fontSize: 26,
-                marginBottom: 24,
+                gap: 10,
               }}
             >
-              {city && <span>{city}</span>}
-              {city && views !== null && <span>•</span>}
-              {views !== null && <span>👁 {views.toLocaleString()} views</span>}
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 7,
+                  backgroundColor: '#e8600a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 16,
+                  fontWeight: 900,
+                  color: 'white',
+                }}
+              >
+                M
+              </div>
+              <span
+                style={{
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.65)',
+                  letterSpacing: 2,
+                  fontWeight: 600,
+                }}
+              >
+                Landing Page by Maiarix AI
+              </span>
             </div>
-          )}
 
-          {/* Agent name */}
-          {agentName && (
+            {/* Bottom content strip */}
             <div
               style={{
-                color: theme.accent,
-                fontSize: 28,
-                fontWeight: 600,
-                marginBottom: waNumber ? 16 : 0,
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                padding: '0 40px 32px 40px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0,
               }}
             >
-              {agentName}
-            </div>
-          )}
+              {/* Business name */}
+              <div
+                style={{
+                  fontSize: displayName.length > 18 ? 56 : 68,
+                  fontWeight: 900,
+                  color: '#ffffff',
+                  lineHeight: 1.05,
+                  marginBottom: 10,
+                }}
+              >
+                {displayName}
+              </div>
 
-          {/* WhatsApp badge */}
-          {waNumber && (
-            <div style={{ display: 'flex' }}>
+              {/* City + views + agent row */}
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
-                  background: '#25d366',
-                  color: '#fff',
-                  borderRadius: 999,
-                  padding: '8px 20px',
-                  fontSize: 22,
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    flex: 1,
+                  }}
+                >
+                  {city && (
+                    <span
+                      style={{
+                        fontSize: 20,
+                        color: 'rgba(255,255,255,0.7)',
+                      }}
+                    >
+                      {city}
+                    </span>
+                  )}
+                  {city && viewCount > 0 && (
+                    <span
+                      style={{
+                        fontSize: 16,
+                        color: 'rgba(255,255,255,0.3)',
+                        margin: '0 4px',
+                      }}
+                    >
+                      ·
+                    </span>
+                  )}
+                  {viewCount > 0 && (
+                    <span
+                      style={{
+                        fontSize: 20,
+                        color: 'rgba(255,255,255,0.7)',
+                      }}
+                    >
+                      {viewCount.toLocaleString('id-ID')} views
+                    </span>
+                  )}
+                  {agentName && (
+                    <span
+                      style={{
+                        fontSize: 16,
+                        color: 'rgba(255,255,255,0.4)',
+                        marginLeft: 12,
+                      }}
+                    >
+                      Agen: {agentName}
+                    </span>
+                  )}
+                </div>
+
+                {/* WA badge right */}
+                {hasWa && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      backgroundColor: '#25D366',
+                      borderRadius: 24,
+                      padding: '10px 22px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: 'white',
+                      }}
+                    >
+                      💬 Hubungi WA
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom orange accent line */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 4,
+                backgroundColor: '#e8600a',
+                display: 'flex',
+              }}
+            />
+          </div>
+        )
+
+      : /* NO PHOTO — dark branded card */
+        (
+          <div
+            style={{
+              width: 1200,
+              height: 630,
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: '#0a0a0a',
+              position: 'relative',
+            }}
+          >
+            {/* Left orange bar */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 5,
+                height: 630,
+                backgroundColor: '#e8600a',
+                display: 'flex',
+              }}
+            />
+
+            {/* Subtle background tint */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(232,96,10,0.03)',
+                display: 'flex',
+              }}
+            />
+
+            {/* Large faint house icon — center */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 100,
+                left: 0,
+                right: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                fontSize: 220,
+                opacity: 0.05,
+              }}
+            >
+              🏠
+            </div>
+
+            {/* Top: Maiarix brand */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 28,
+                left: 36,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 7,
+                  backgroundColor: '#e8600a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 16,
+                  fontWeight: 900,
+                  color: 'white',
+                }}
+              >
+                M
+              </div>
+              <span
+                style={{
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.35)',
+                  letterSpacing: 2,
                   fontWeight: 600,
                 }}
               >
-                <span style={{ fontSize: 22 }}>💬</span>
-                <span>{waNumber}</span>
+                Landing Page by Maiarix AI
+              </span>
+            </div>
+
+            {/* Horizontal divider */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 420,
+                left: 0,
+                right: 0,
+                height: 1,
+                backgroundColor: 'rgba(255,255,255,0.06)',
+                display: 'flex',
+              }}
+            />
+
+            {/* Bottom content strip */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                padding: '0 40px 32px 40px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0,
+              }}
+            >
+              {/* Business name */}
+              <div
+                style={{
+                  fontSize: displayName.length > 18 ? 56 : 68,
+                  fontWeight: 900,
+                  color: '#ffffff',
+                  lineHeight: 1.05,
+                  marginBottom: 10,
+                }}
+              >
+                {displayName}
+              </div>
+
+              {/* City + views + agent + WA row */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    flex: 1,
+                  }}
+                >
+                  {city && (
+                    <span
+                      style={{
+                        fontSize: 20,
+                        color: 'rgba(255,255,255,0.5)',
+                      }}
+                    >
+                      {city}
+                    </span>
+                  )}
+                  {city && viewCount > 0 && (
+                    <span
+                      style={{
+                        fontSize: 16,
+                        color: 'rgba(255,255,255,0.2)',
+                        margin: '0 4px',
+                      }}
+                    >
+                      ·
+                    </span>
+                  )}
+                  {viewCount > 0 && (
+                    <span
+                      style={{
+                        fontSize: 20,
+                        color: 'rgba(255,255,255,0.5)',
+                      }}
+                    >
+                      {viewCount.toLocaleString('id-ID')} views
+                    </span>
+                  )}
+                  {agentName && (
+                    <span
+                      style={{
+                        fontSize: 16,
+                        color: 'rgba(255,255,255,0.3)',
+                        marginLeft: 12,
+                      }}
+                    >
+                      Agen: {agentName}
+                    </span>
+                  )}
+                </div>
+
+                {hasWa && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      backgroundColor: '#25D366',
+                      borderRadius: 24,
+                      padding: '10px 22px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: 'white',
+                      }}
+                    >
+                      💬 Hubungi WA
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Accent bar */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 52,
-              left: 56,
-              right: 56,
-              height: 3,
-              background: theme.accent,
-              borderRadius: 2,
-            }}
-          />
-
-          {/* Watermark */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 22,
-              right: 56,
-              color: theme.sub,
-              fontSize: 18,
-              opacity: 0.7,
-            }}
-          >
-            Powered by Maiarix
-          </div>
-        </div>
-
-        {/* Right panel — hero image */}
-        {hasHero && (
-          <div
-            style={{
-              width: '35%',
-              height: '100%',
-              overflow: 'hidden',
-              display: 'flex',
-            }}
-          >
-            <img
-              src={heroSrc!}
-              width={420}
-              height={630}
-              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+            {/* Bottom orange accent */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 4,
+                backgroundColor: '#e8600a',
+                display: 'flex',
+              }}
             />
           </div>
-        )}
-      </div>
-    ),
-    { width: 1200, height: 630 }
-  )
+        ),
+    {
+      width: 1200,
+      height: 630,
+    }
+  );
 }
