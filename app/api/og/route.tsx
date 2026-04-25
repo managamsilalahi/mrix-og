@@ -6,8 +6,6 @@ export const runtime = 'edge';
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY!;
 
-const LOGO_URL = 'https://mrix.ai/_next/image?url=%2Fassets%2Flanding%2Flogo-dark.png&w=64&q=75';
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get('slug') ?? '';
@@ -76,16 +74,7 @@ export async function GET(req: NextRequest) {
     } catch {}
   }
 
-  // Try to fetch logo — fall back to "M" square if it fails
-  let logoFailed = false;
-  try {
-    const logoRes = await fetch(LOGO_URL);
-    if (!logoRes.ok) logoFailed = true;
-  } catch {
-    logoFailed = true;
-  }
-
-  // Logo element — real image or "M" square fallback
+  // Logo element — "M" orange square
   const LogoBrand = (
     <div
       style={{
@@ -97,33 +86,22 @@ export async function GET(req: NextRequest) {
         gap: 10,
       }}
     >
-      {logoFailed ? (
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 6,
-            backgroundColor: '#e8600a',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 14,
-            fontWeight: 900,
-            color: 'white',
-          }}
-        >
-          M
-        </div>
-      ) : (
-        <img
-          src={LOGO_URL}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 6,
-          }}
-        />
-      )}
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 6,
+          backgroundColor: '#e8600a',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 14,
+          fontWeight: 900,
+          color: 'white',
+        }}
+      >
+        M
+      </div>
       <span
         style={{
           fontSize: 12,
