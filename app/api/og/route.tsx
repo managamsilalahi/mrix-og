@@ -76,14 +76,14 @@ export async function GET(req: NextRequest) {
 
   const response = new ImageResponse(
     hasPhoto ? (
-      /* ── D1: PHOTO HERO — CLEAN BOTTOM STRIP ── */
+      /* ── D1: PHOTO HERO — BLUE BRANDED ── */
       <div
         style={{
           width: 1200,
           height: 630,
           display: 'flex',
           position: 'relative',
-          backgroundColor: '#0f0f0f',
+          backgroundColor: '#0a0a0a',
         }}
       >
         {/* Full bleed hero image */}
@@ -99,15 +99,15 @@ export async function GET(req: NextRequest) {
           }}
         />
 
-        {/* Top gradient — brand readability */}
+        {/* Top gradient — header readability */}
         <div
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: 140,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.55), transparent)',
+            height: 120,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)',
             display: 'flex',
           }}
         />
@@ -126,11 +126,25 @@ export async function GET(req: NextRequest) {
           }}
         />
 
-        {/* Logo block */}
+        {/* Header bar */}
         <div
           style={{
             position: 'absolute',
-            top: 28,
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 58,
+            backgroundColor: 'rgba(18,18,18,0.85)',
+            borderBottom: '1px solid rgba(33,33,33,0.8)',
+            display: 'flex',
+          }}
+        />
+
+        {/* Logo block — centered in 58px bar: (58-22)/2 = 18 */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 18,
             left: 36,
             display: 'flex',
             alignItems: 'center',
@@ -139,29 +153,49 @@ export async function GET(req: NextRequest) {
         >
           <div
             style={{
-              width: 26,
-              height: 26,
-              borderRadius: 6,
-              backgroundColor: '#e8600a',
+              width: 22,
+              height: 22,
+              borderRadius: 5,
+              backgroundColor: '#f5f5f5',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 13,
               fontWeight: 900,
-              color: 'white',
+              color: '#0a0a0a',
             }}
           >
             M
           </div>
           <span
             style={{
-              fontSize: 10,
-              color: 'rgba(255,255,255,0.5)',
-              letterSpacing: '1px',
+              fontSize: 13,
+              color: '#f5f5f5',
+              fontWeight: 600,
               whiteSpace: 'nowrap',
             }}
           >
             Landing Page by Maiarix AI
+          </span>
+        </div>
+
+        {/* Top-right label */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 20,
+            right: 40,
+            display: 'flex',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.4)',
+              letterSpacing: '1px',
+            }}
+          >
+            PROPERTI INDONESIA
           </span>
         </div>
 
@@ -182,7 +216,7 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: nameFontSize,
               fontWeight: 900,
-              color: '#ffffff',
+              color: '#f5f5f5',
               lineHeight: 1.05,
               marginBottom: 8,
             }}
@@ -190,28 +224,26 @@ export async function GET(req: NextRequest) {
             {displayName}
           </span>
 
-          {/* Info + WA row */}
+          {/* Info row + WA badge */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               width: '100%',
-              marginBottom: agentName ? 6 : 0,
             }}
           >
-            {/* Left: city · views */}
+            {/* Left: city · views · agent */}
             <div
               style={{
                 display: 'flex',
-                flex: 1,
                 flexDirection: 'row',
                 gap: 8,
                 alignItems: 'center',
               }}
             >
               {city && (
-                <span style={{ fontSize: 19, color: 'rgba(255,255,255,0.65)' }}>
+                <span style={{ fontSize: 17, color: 'rgba(255,255,255,0.65)' }}>
                   {city}
                 </span>
               )}
@@ -222,12 +254,29 @@ export async function GET(req: NextRequest) {
                     height: 4,
                     borderRadius: '50%',
                     backgroundColor: 'rgba(255,255,255,0.3)',
+                    display: 'flex',
                   }}
                 />
               )}
               {viewCount > 0 && (
-                <span style={{ fontSize: 19, color: 'rgba(255,255,255,0.65)' }}>
+                <span style={{ fontSize: 17, color: 'rgba(255,255,255,0.65)' }}>
                   {viewCount.toLocaleString('id-ID')} views
+                </span>
+              )}
+              {agentName && (viewCount > 0 || city) && (
+                <div
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                    display: 'flex',
+                  }}
+                />
+              )}
+              {agentName && (
+                <span style={{ fontSize: 17, color: 'rgba(255,255,255,0.65)' }}>
+                  {agentName}
                 </span>
               )}
             </div>
@@ -239,8 +288,8 @@ export async function GET(req: NextRequest) {
                   display: 'flex',
                   alignItems: 'center',
                   backgroundColor: '#25D366',
-                  borderRadius: 22,
-                  padding: '10px 22px',
+                  borderRadius: 9999,
+                  padding: '10px 24px',
                 }}
               >
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>
@@ -250,57 +299,66 @@ export async function GET(req: NextRequest) {
             )}
           </div>
 
-          {/* Agent name */}
-          {agentName && (
-            <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.38)' }}>
-              Agen: {agentName}
+          {/* Footer strip */}
+          <div
+            style={{
+              marginTop: 16,
+              borderTop: '1px solid rgba(33,33,33,0.6)',
+              paddingTop: 12,
+              display: 'flex',
+            }}
+          >
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+              lp.mrix.ai · Properti Terbaik · Agen Profesional · Langsung WA
             </span>
-          )}
+          </div>
         </div>
-
-        {/* Orange accent line */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 3,
-            backgroundColor: '#e8600a',
-            display: 'flex',
-          }}
-        />
       </div>
     ) : (
-      /* ── C3: NO PHOTO — EDITORIAL/MAGAZINE ── */
+      /* ── C3: NO PHOTO — BLUE EDITORIAL ── */
       <div
         style={{
           width: 1200,
           height: 630,
           display: 'flex',
           position: 'relative',
-          backgroundColor: '#0c0c0c',
+          backgroundColor: '#0a0a0a',
         }}
       >
-        {/* Top header bar */}
+        {/* Blue radial glow — top center */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -100,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 760,
+            height: 760,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(73,125,238,0.08) 0%, transparent 70%)',
+            display: 'flex',
+          }}
+        />
+
+        {/* Header bar */}
         <div
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: 56,
-            backgroundColor: 'rgba(255,255,255,0.03)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            height: 58,
+            backgroundColor: '#121212',
+            borderBottom: '1px solid #212121',
             display: 'flex',
           }}
         />
 
-        {/* Logo block — centered within 56px bar: (56-26)/2 = 15 */}
+        {/* Logo block — centered in 58px bar: (58-22)/2 = 18 */}
         <div
           style={{
             position: 'absolute',
-            top: 15,
+            top: 18,
             left: 36,
             display: 'flex',
             alignItems: 'center',
@@ -309,25 +367,25 @@ export async function GET(req: NextRequest) {
         >
           <div
             style={{
-              width: 26,
-              height: 26,
-              borderRadius: 6,
-              backgroundColor: '#e8600a',
+              width: 22,
+              height: 22,
+              borderRadius: 5,
+              backgroundColor: '#f5f5f5',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 13,
               fontWeight: 900,
-              color: 'white',
+              color: '#0a0a0a',
             }}
           >
             M
           </div>
           <span
             style={{
-              fontSize: 10,
-              color: 'rgba(255,255,255,0.5)',
-              letterSpacing: '1px',
+              fontSize: 13,
+              color: '#f5f5f5',
+              fontWeight: 600,
               whiteSpace: 'nowrap',
             }}
           >
@@ -335,8 +393,27 @@ export async function GET(req: NextRequest) {
           </span>
         </div>
 
+        {/* Top-right label */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 20,
+            right: 40,
+            display: 'flex',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 11,
+              color: '#737373',
+              letterSpacing: '1px',
+            }}
+          >
+            LANDING PAGE
+          </span>
+        </div>
 
-        {/* Center content — inset flex column */}
+        {/* Center content */}
         <div
           style={{
             position: 'absolute',
@@ -355,21 +432,21 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: nameFontSize,
               fontWeight: 900,
-              color: '#ffffff',
+              color: '#f5f5f5',
               marginBottom: 20,
             }}
           >
             {displayName}
           </span>
 
-          {/* Horizontal rules + orange dot */}
+          {/* Divider row — rules + blue dot */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'row',
               width: '100%',
-              paddingLeft: 80,
-              paddingRight: 80,
+              paddingLeft: 100,
+              paddingRight: 100,
               alignItems: 'center',
               marginBottom: 20,
             }}
@@ -378,7 +455,7 @@ export async function GET(req: NextRequest) {
               style={{
                 flex: 1,
                 height: 1,
-                backgroundColor: 'rgba(255,255,255,0.08)',
+                backgroundColor: '#212121',
               }}
             />
             <div
@@ -386,15 +463,16 @@ export async function GET(req: NextRequest) {
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                backgroundColor: '#e8600a',
+                backgroundColor: '#6591f1',
                 margin: '0 16px',
+                display: 'flex',
               }}
             />
             <div
               style={{
                 flex: 1,
                 height: 1,
-                backgroundColor: 'rgba(255,255,255,0.08)',
+                backgroundColor: '#212121',
               }}
             />
           </div>
@@ -403,11 +481,11 @@ export async function GET(req: NextRequest) {
           <span
             style={{
               fontSize: 18,
-              color: 'rgba(255,255,255,0.4)',
-              marginBottom: 20,
+              color: '#737373',
+              marginBottom: 24,
             }}
           >
-            {subText}{agentName ? ` · Agen: ${agentName}` : ''}
+            {subText}{agentName ? ` · ${agentName}` : ''}
           </span>
 
           {/* WA badge */}
@@ -417,45 +495,35 @@ export async function GET(req: NextRequest) {
                 display: 'flex',
                 alignItems: 'center',
                 backgroundColor: '#25D366',
-                borderRadius: 24,
-                padding: '10px 28px',
+                borderRadius: 9999,
+                padding: '10px 24px',
               }}
             >
-              <span style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>
                 Hubungi WA
               </span>
             </div>
           )}
         </div>
 
-        {/* Bottom watermark */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 20,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            justifyContent: 'center',
-          }}
-        >
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.18)' }}>
-            Properti Terbaik · Agen Profesional · Langsung WA
-          </span>
-        </div>
-
-        {/* Orange accent line */}
+        {/* Footer bar */}
         <div
           style={{
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            height: 3,
-            backgroundColor: '#e8600a',
+            height: 28,
+            borderTop: '1px solid #212121',
             display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-        />
+        >
+          <span style={{ fontSize: 11, color: '#737373' }}>
+            lp.mrix.ai · Properti Terbaik · Agen Profesional · Langsung WA
+          </span>
+        </div>
       </div>
     ),
     {
