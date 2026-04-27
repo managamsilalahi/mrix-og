@@ -17,6 +17,9 @@ export async function GET(req: NextRequest) {
   let agentName = '';
   let hasWa = false;
   let heroImageUrl: string | null = null;
+  let ogDescription = '';
+  let accentColor = '#6591f1';
+  let verticalLabel = 'Bisnis Indonesia';
 
   if (slug) {
     try {
@@ -26,7 +29,7 @@ export async function GET(req: NextRequest) {
       };
 
       const projectRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/projects?published_slug=eq.${encodeURIComponent(slug)}&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id&limit=1`,
+        `${SUPABASE_URL}/rest/v1/projects?published_slug=eq.${encodeURIComponent(slug)}&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id,style,published_html&limit=1`,
         { headers }
       );
 
@@ -57,6 +60,48 @@ export async function GET(req: NextRequest) {
           subText = `${viewCount.toLocaleString('id-ID')} views`;
         } else {
           subText = 'Properti Indonesia';
+        }
+
+        // Extract og:description from published_html
+        if (project.published_html) {
+          const descMatch = project.published_html.match(
+            /property="og:description"\s+content="([^"]{10,120})"/
+          );
+          if (descMatch) {
+            ogDescription = descMatch[1]
+              .replace(/\s*-\s*cicilan.*$/i, '')
+              .replace(/\s*\.\s*Info.*$/i, '')
+              .trim();
+          }
+        }
+
+        // Style → accent color map
+        const STYLE_COLORS: Record<string, string> = {
+          noir:    '#6591f1',
+          ember:   '#e8600a',
+          dawn:    '#4f7942',
+          dusk:    '#9b59b6',
+          ocean:   '#0ea5e9',
+          forest:  '#16a34a',
+          rose:    '#e11d48',
+          slate:   '#64748b',
+        };
+        accentColor = STYLE_COLORS[project.style ?? ''] ?? '#6591f1';
+
+        // Vertical detection from displayName + description
+        const verticalText = (displayName + ' ' + ogDescription).toLowerCase();
+        if (/desain|interior|arsitektur|renovasi|kontraktor/.test(verticalText)) {
+          verticalLabel = 'Desain Interior';
+        } else if (/hotel|villa|resort|penginapan|hospitality/.test(verticalText)) {
+          verticalLabel = 'Hotel & Hospitality';
+        } else if (/asuransi|insurance|proteksi|jiwa/.test(verticalText)) {
+          verticalLabel = 'Asuransi';
+        } else if (/kuliner|resto|restoran|kafe|cafe|makanan/.test(verticalText)) {
+          verticalLabel = 'Kuliner & Resto';
+        } else if (/properti|rumah|apartemen|kavling|ruko|tanah/.test(verticalText)) {
+          verticalLabel = 'Properti';
+        } else {
+          verticalLabel = 'Bisnis Indonesia';
         }
 
         if (project.user_id) {
@@ -427,6 +472,21 @@ export async function GET(req: NextRequest) {
             justifyContent: 'center',
           }}
         >
+          {/* Vertical label */}
+          {verticalLabel && (
+            <div style={{
+              fontSize: 13,
+              color: accentColor,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              marginBottom: 12,
+              opacity: 0.8,
+              display: 'flex',
+            }}>
+              {verticalLabel}
+            </div>
+          )}
+
           {/* Business name */}
           <span
             style={{
@@ -463,7 +523,7 @@ export async function GET(req: NextRequest) {
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                backgroundColor: '#6591f1',
+                backgroundColor: accentColor,
                 margin: '0 16px',
                 display: 'flex',
               }}
@@ -485,7 +545,7 @@ export async function GET(req: NextRequest) {
               marginBottom: 24,
             }}
           >
-            {subText}{agentName ? ` · ${agentName}` : ''}
+            {ogDescription || subText}{agentName ? ` · Agen: ${agentName}` : ''}
           </span>
 
           {/* WA badge */}
@@ -521,7 +581,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           <span style={{ fontSize: 11, color: '#737373' }}>
-            lp.mrix.ai · Properti Terbaik · Agen Profesional · Langsung WA
+            {`${verticalLabel} · Langsung WA · lp.mrix.ai`}
           </span>
         </div>
       </div>
