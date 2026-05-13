@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       };
 
       const projectRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/projects?published_slug=eq.${encodeURIComponent(slug)}&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id,style,published_html&limit=1`,
+        `${SUPABASE_URL}/rest/v1/projects?or=(published_slug.eq.${encodeURIComponent(slug)},vanity_slug.eq.${encodeURIComponent(slug)})&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id,style,published_html&limit=1`,
         { headers }
       );
 
