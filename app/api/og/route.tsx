@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
   let ogDescription = '';
   let accentColor = '#6591f1';
   let verticalLabel = 'Bisnis Indonesia';
+  let searchQueryDisplay = '';
 
   if (slug) {
     try {
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
       };
 
       const projectRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/projects?or=(published_slug.eq.${encodeURIComponent(slug)},vanity_slug.eq.${encodeURIComponent(slug)})&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id,style,published_html&limit=1`,
+        `${SUPABASE_URL}/rest/v1/projects?or=(published_slug.eq.${encodeURIComponent(slug)},vanity_slug.eq.${encodeURIComponent(slug)})&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id,style,published_html,transaction_type&limit=1`,
         { headers }
       );
 
@@ -51,6 +52,11 @@ export async function GET(req: NextRequest) {
         viewCount = project.view_count || 0;
         hasWa = !!project.whatsapp_number;
         heroImageUrl = project.hero_image_url || null;
+
+        const txPrefix = project.transaction_type === 'disewakan' ? 'disewakan' : 'dijual';
+        const rawNameForSearch = project.property_name || project.business_name || project.name || '';
+        const searchQuery = [txPrefix, rawNameForSearch, project.city || ''].filter(Boolean).join(' ');
+        searchQueryDisplay = searchQuery.length > 42 ? searchQuery.slice(0, 40) + '…' : searchQuery;
 
         if (city && viewCount > 0) {
           subText = `${city} · ${viewCount.toLocaleString('id-ID')} views`;
@@ -344,18 +350,22 @@ export async function GET(req: NextRequest) {
             )}
           </div>
 
-          {/* Footer strip */}
-          <div
-            style={{
-              marginTop: 16,
-              borderTop: '1px solid rgba(33,33,33,0.6)',
-              paddingTop: 12,
-              display: 'flex',
-            }}
-          >
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
-              lp.mrix.ai · Properti Terbaik · Agen Profesional · Langsung WA
-            </span>
+          {/* Google search bar */}
+          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.95)', borderRadius: 28, padding: '9px 20px', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#4285F4', display: 'flex' }} />
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#EA4335', display: 'flex' }} />
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#FBBC05', display: 'flex' }} />
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#34A853', display: 'flex' }} />
+              </div>
+              <span style={{ fontSize: 19, color: '#1a1a1a', fontWeight: 400, display: 'flex' }}>
+                {searchQueryDisplay || 'properti indonesia'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,168,83,0.15)', border: '1px solid rgba(52,168,83,0.4)', borderRadius: 20, padding: '3px 14px', alignSelf: 'flex-start' }}>
+              <span style={{ fontSize: 16, color: '#34A853', fontWeight: 600, display: 'flex' }}>✓ Ditemukan di Google</span>
+            </div>
           </div>
         </div>
       </div>
@@ -548,22 +558,23 @@ export async function GET(req: NextRequest) {
             {ogDescription || subText}{agentName ? ` · Agen: ${agentName}` : ''}
           </span>
 
-          {/* WA badge */}
-          {hasWa && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: '#25D366',
-                borderRadius: 9999,
-                padding: '10px 24px',
-              }}
-            >
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>
-                Hubungi WA
+          {/* Google search bar */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 28, padding: '10px 24px', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#4285F4', display: 'flex' }} />
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#EA4335', display: 'flex' }} />
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#FBBC05', display: 'flex' }} />
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#34A853', display: 'flex' }} />
+              </div>
+              <span style={{ fontSize: 19, color: 'rgba(255,255,255,0.75)', fontWeight: 400, display: 'flex' }}>
+                {searchQueryDisplay || 'properti indonesia'}
               </span>
             </div>
-          )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,168,83,0.15)', border: '1px solid rgba(52,168,83,0.4)', borderRadius: 20, padding: '3px 14px' }}>
+              <span style={{ fontSize: 16, color: '#34A853', fontWeight: 600, display: 'flex' }}>✓ Ditemukan di Google</span>
+            </div>
+          </div>
         </div>
 
         {/* Footer bar */}
