@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
 
         const txPrefix = project.transaction_type === 'disewakan' ? 'disewakan' : 'dijual';
         const rawNameForSearch = project.property_name || project.business_name || project.name || '';
-        const searchQuery = [txPrefix, rawNameForSearch, project.city || ''].filter(Boolean).join(' ');
+        const searchQuery = [txPrefix, rawNameForSearch, project.city || '', 'maiarix'].filter(Boolean).join(' ');
         searchQueryDisplay = searchQuery.length > 42 ? searchQuery.slice(0, 40) + '…' : searchQuery;
 
         if (city && viewCount > 0) {
