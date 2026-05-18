@@ -17,6 +17,8 @@ export async function GET(req: NextRequest) {
   let city = '';
   let heroImageUrl: string | null = null;
   let searchQueryDisplay = '';
+  let urlDisplay = 'mrix.ai';
+  let titleDisplay = '';
 
   if (slug) {
     try {
@@ -26,7 +28,7 @@ export async function GET(req: NextRequest) {
       };
 
       const projectRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/projects?or=(published_slug.eq.${encodeURIComponent(slug)},vanity_slug.eq.${encodeURIComponent(slug)})&select=business_name,property_name,name,city,hero_image_url,transaction_type&limit=1`,
+        `${SUPABASE_URL}/rest/v1/projects?or=(published_slug.eq.${encodeURIComponent(slug)},vanity_slug.eq.${encodeURIComponent(slug)})&select=business_name,property_name,name,city,hero_image_url,transaction_type,published_slug,vanity_slug&limit=1`,
         { headers }
       );
 
@@ -46,8 +48,14 @@ export async function GET(req: NextRequest) {
 
         const txPrefix = project.transaction_type === 'disewakan' ? 'disewakan' : 'dijual';
         const rawNameForSearch = project.property_name || project.business_name || project.name || '';
-        const searchQuery = [txPrefix, rawNameForSearch, project.city || '', 'maiarix'].filter(Boolean).join(' ');
+        const postfixes = ['maiarix', 'maiarix ai', 'mrix ai', 'mrix.ai'];
+        const lastChar = (slug || 'a').slice(-1);
+        const postfix = postfixes[parseInt(lastChar, 16) % postfixes.length];
+        const searchQuery = [txPrefix, rawNameForSearch, project.city || '', postfix].filter(Boolean).join(' ');
         searchQueryDisplay = searchQuery.length > 38 ? searchQuery.slice(0, 36) + '…' : searchQuery;
+        const slugVal = project.vanity_slug || project.published_slug || '';
+        urlDisplay = slugVal ? `${slugVal}.mrix.ai` : 'mrix.ai';
+        titleDisplay = rawNameForSearch.length > 45 ? rawNameForSearch.slice(0, 43) + '…' : rawNameForSearch;
       }
     } catch {}
   }
@@ -175,39 +183,83 @@ export async function GET(req: NextRequest) {
           </span>
         )}
 
-        {/* Google search bar pill */}
+        {/* Google result card */}
         <div
           style={{
+            background: 'rgba(255,255,255,0.97)',
+            borderRadius: 40,
+            padding: '44px 52px',
             display: 'flex',
-            alignItems: 'center',
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: 54,
-            padding: '18px 32px',
-            gap: 18,
-            marginBottom: 18,
+            flexDirection: 'column',
+            gap: 0,
+            marginBottom: 24,
+            width: '100%',
           }}
         >
-          {/* 4 Google dots */}
-          <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-            {['#4285F4', '#EA4335', '#FBBC05', '#34A853'].map((c, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: 8,
-                  background: c,
-                  display: 'flex',
-                }}
-              />
-            ))}
+          {/* Search bar row */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: '#f1f3f4',
+              borderRadius: 48,
+              padding: '22px 32px',
+              gap: 20,
+              marginBottom: 28,
+            }}
+          >
+            <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+              {(['#4285F4', '#EA4335', '#FBBC05', '#34A853'] as const).map((c, i) => (
+                <div key={i} style={{ width: 18, height: 18, borderRadius: 9, background: c, display: 'flex' }} />
+              ))}
+            </div>
+            <span style={{ fontSize: 32, color: '#3c4043', fontWeight: 400, display: 'flex' }}>
+              {searchQueryDisplay || 'properti indonesia'}
+            </span>
           </div>
-          <span style={{ fontSize: 30, color: '#1a1a1a', fontWeight: 400, display: 'flex' }}>
-            {searchQueryDisplay || 'properti indonesia'}
-          </span>
+          {/* Divider */}
+          <div style={{ height: 1, background: '#e8eaed', marginBottom: 28, display: 'flex' }} />
+          {/* Result row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            {/* Maiarix M circle */}
+            <div
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                background: '#1D9E75',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: 30, fontWeight: 900, color: '#fff', display: 'flex' }}>M</span>
+            </div>
+            {/* Text column */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 4 }}>
+              <span style={{ fontSize: 26, color: '#0F6E56', display: 'flex' }}>{urlDisplay}</span>
+              <span style={{ fontSize: 32, fontWeight: 700, color: '#1a0dab', display: 'flex' }}>{titleDisplay || displayName}</span>
+              <span style={{ fontSize: 24, color: '#70757a', display: 'flex' }}>
+                {city ? `${city} · Properti eksklusif · lp.mrix.ai` : 'Properti eksklusif · lp.mrix.ai'}
+              </span>
+            </div>
+            {/* Hasil #1 badge */}
+            <div
+              style={{
+                background: '#34A853',
+                borderRadius: 16,
+                padding: '10px 24px',
+                display: 'flex',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: 26, fontWeight: 700, color: '#fff', display: 'flex' }}>Hasil #1</span>
+            </div>
+          </div>
         </div>
 
-        {/* ✓ Ditemukan di Google badge */}
+        {/* ✓ Ditemukan di Google trust badge */}
         <div
           style={{
             display: 'flex',
@@ -215,12 +267,12 @@ export async function GET(req: NextRequest) {
             gap: 8,
             background: 'rgba(52,168,83,0.15)',
             border: '1.5px solid rgba(52,168,83,0.45)',
-            borderRadius: 32,
-            padding: '10px 28px',
+            borderRadius: 40,
+            padding: '14px 36px',
             alignSelf: 'flex-start',
           }}
         >
-          <span style={{ fontSize: 28, color: '#34A853', fontWeight: 700, display: 'flex' }}>
+          <span style={{ fontSize: 36, color: '#34A853', fontWeight: 700, display: 'flex' }}>
             ✓ Ditemukan di Google
           </span>
         </div>

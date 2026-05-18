@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
   let accentColor = '#6591f1';
   let verticalLabel = 'Bisnis Indonesia';
   let searchQueryDisplay = '';
+  let urlDisplay = 'mrix.ai';
+  let titleDisplay = '';
 
   if (slug) {
     try {
@@ -30,7 +32,7 @@ export async function GET(req: NextRequest) {
       };
 
       const projectRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/projects?or=(published_slug.eq.${encodeURIComponent(slug)},vanity_slug.eq.${encodeURIComponent(slug)})&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id,style,published_html,transaction_type&limit=1`,
+        `${SUPABASE_URL}/rest/v1/projects?or=(published_slug.eq.${encodeURIComponent(slug)},vanity_slug.eq.${encodeURIComponent(slug)})&select=business_name,property_name,name,city,view_count,hero_image_url,whatsapp_number,user_id,style,published_html,transaction_type,published_slug,vanity_slug&limit=1`,
         { headers }
       );
 
@@ -55,8 +57,14 @@ export async function GET(req: NextRequest) {
 
         const txPrefix = project.transaction_type === 'disewakan' ? 'disewakan' : 'dijual';
         const rawNameForSearch = project.property_name || project.business_name || project.name || '';
-        const searchQuery = [txPrefix, rawNameForSearch, project.city || '', 'maiarix'].filter(Boolean).join(' ');
+        const postfixes = ['maiarix', 'maiarix ai', 'mrix ai', 'mrix.ai'];
+        const lastChar = (slug || 'a').slice(-1);
+        const postfix = postfixes[parseInt(lastChar, 16) % postfixes.length];
+        const searchQuery = [txPrefix, rawNameForSearch, project.city || '', postfix].filter(Boolean).join(' ');
         searchQueryDisplay = searchQuery.length > 42 ? searchQuery.slice(0, 40) + '…' : searchQuery;
+        const slugVal = project.vanity_slug || project.published_slug || '';
+        urlDisplay = slugVal ? `${slugVal}.mrix.ai` : 'mrix.ai';
+        titleDisplay = rawNameForSearch.length > 45 ? rawNameForSearch.slice(0, 43) + '…' : rawNameForSearch;
 
         if (city && viewCount > 0) {
           subText = `${city} · ${viewCount.toLocaleString('id-ID')} views`;
@@ -350,20 +358,43 @@ export async function GET(req: NextRequest) {
             )}
           </div>
 
-          {/* Google search bar */}
-          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.95)', borderRadius: 28, padding: '9px 20px', gap: 12 }}>
-              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#4285F4', display: 'flex' }} />
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#EA4335', display: 'flex' }} />
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#FBBC05', display: 'flex' }} />
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#34A853', display: 'flex' }} />
+          {/* Google result card */}
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* White card */}
+            <div style={{ background: 'rgba(255,255,255,0.97)', borderRadius: 20, padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {/* Search bar row */}
+              <div style={{ display: 'flex', alignItems: 'center', background: '#f1f3f4', borderRadius: 26, padding: '7px 14px', gap: 8, marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                  {(['#4285F4', '#EA4335', '#FBBC05', '#34A853'] as const).map((c, i) => (
+                    <div key={i} style={{ width: 10, height: 10, borderRadius: 5, background: c, display: 'flex' }} />
+                  ))}
+                </div>
+                <span style={{ fontSize: 17, color: '#3c4043', fontWeight: 400, display: 'flex' }}>
+                  {searchQueryDisplay || 'properti indonesia'}
+                </span>
               </div>
-              <span style={{ fontSize: 19, color: '#1a1a1a', fontWeight: 400, display: 'flex' }}>
-                {searchQueryDisplay || 'properti indonesia'}
-              </span>
+              {/* Divider */}
+              <div style={{ height: 1, background: '#e8eaed', margin: '0 0 10px 0', display: 'flex' }} />
+              {/* Result row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {/* Maiarix M circle */}
+                <div style={{ width: 30, height: 30, borderRadius: 15, background: '#1D9E75', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', display: 'flex' }}>M</span>
+                </div>
+                {/* Text column */}
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <span style={{ fontSize: 13, color: '#0F6E56', display: 'flex' }}>{urlDisplay}</span>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1a0dab', display: 'flex' }}>{titleDisplay || displayName}</span>
+                  <span style={{ fontSize: 12, color: '#70757a', display: 'flex' }}>{city ? `${city} · Properti eksklusif · lp.mrix.ai` : 'Properti eksklusif · lp.mrix.ai'}</span>
+                </div>
+                {/* Hasil #1 badge */}
+                <div style={{ background: '#34A853', borderRadius: 8, padding: '4px 10px', display: 'flex', flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', display: 'flex' }}>Hasil #1</span>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,168,83,0.15)', border: '1px solid rgba(52,168,83,0.4)', borderRadius: 20, padding: '3px 14px', alignSelf: 'flex-start' }}>
+            {/* Trust badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,168,83,0.15)', border: '1px solid rgba(52,168,83,0.4)', borderRadius: 20, padding: '4px 14px', alignSelf: 'flex-start' }}>
               <span style={{ fontSize: 16, color: '#34A853', fontWeight: 600, display: 'flex' }}>✓ Ditemukan di Google</span>
             </div>
           </div>
@@ -558,20 +589,40 @@ export async function GET(req: NextRequest) {
             {ogDescription || subText}{agentName ? ` · Agen: ${agentName}` : ''}
           </span>
 
-          {/* Google search bar */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 28, padding: '10px 24px', gap: 12 }}>
-              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#4285F4', display: 'flex' }} />
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#EA4335', display: 'flex' }} />
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#FBBC05', display: 'flex' }} />
-                <div style={{ width: 8, height: 8, borderRadius: 4, background: '#34A853', display: 'flex' }} />
+          {/* Google result card */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 12, width: '85%' }}>
+            {/* White card */}
+            <div style={{ background: 'rgba(255,255,255,0.97)', borderRadius: 20, padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 0, width: '100%' }}>
+              {/* Search bar row */}
+              <div style={{ display: 'flex', alignItems: 'center', background: '#f1f3f4', borderRadius: 26, padding: '7px 14px', gap: 8, marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                  {(['#4285F4', '#EA4335', '#FBBC05', '#34A853'] as const).map((c, i) => (
+                    <div key={i} style={{ width: 10, height: 10, borderRadius: 5, background: c, display: 'flex' }} />
+                  ))}
+                </div>
+                <span style={{ fontSize: 17, color: '#3c4043', fontWeight: 400, display: 'flex' }}>
+                  {searchQueryDisplay || 'properti indonesia'}
+                </span>
               </div>
-              <span style={{ fontSize: 19, color: 'rgba(255,255,255,0.75)', fontWeight: 400, display: 'flex' }}>
-                {searchQueryDisplay || 'properti indonesia'}
-              </span>
+              {/* Divider */}
+              <div style={{ height: 1, background: '#e8eaed', margin: '0 0 10px 0', display: 'flex' }} />
+              {/* Result row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 15, background: '#1D9E75', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', display: 'flex' }}>M</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <span style={{ fontSize: 13, color: '#0F6E56', display: 'flex' }}>{urlDisplay}</span>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1a0dab', display: 'flex' }}>{titleDisplay || displayName}</span>
+                  <span style={{ fontSize: 12, color: '#70757a', display: 'flex' }}>{city ? `${city} · Properti eksklusif · lp.mrix.ai` : 'Properti eksklusif · lp.mrix.ai'}</span>
+                </div>
+                <div style={{ background: '#34A853', borderRadius: 8, padding: '4px 10px', display: 'flex', flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', display: 'flex' }}>Hasil #1</span>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,168,83,0.15)', border: '1px solid rgba(52,168,83,0.4)', borderRadius: 20, padding: '3px 14px' }}>
+            {/* Trust badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,168,83,0.15)', border: '1px solid rgba(52,168,83,0.4)', borderRadius: 20, padding: '4px 14px' }}>
               <span style={{ fontSize: 16, color: '#34A853', fontWeight: 600, display: 'flex' }}>✓ Ditemukan di Google</span>
             </div>
           </div>
